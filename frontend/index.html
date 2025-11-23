@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicPulse - Smart City Triage</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1,
+        h2 {
+            margin-top: 0;
+        }
+
+        /* Form Section */
+        .report-section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            height: fit-content;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            overflow-y: auto;
+        }
+
+        .incident-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .incident-card {
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .incident-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-PENDING {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        .badge-ANALYZED {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .priority-HIGH {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .priority-MEDIUM {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-LOW {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Left: Reporting Form -->
+    <div class="report-section">
+        <h2>📢 Report Incident</h2>
+        <form id="reportForm">
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="4"
+                    placeholder="Describe the issue (e.g., 'Large pothole on 5th Ave')..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Photo (Optional)</label>
+                <input type="file" name="image" accept="image/*">
+            </div>
+            <button type="submit">Submit Report</button>
+        </form>
+    </div>
+
+    <!-- Right: Live Dashboard -->
+    <div class="dashboard-section">
+        <h2>🏙️ City Pulse Dashboard</h2>
+        <div id="incidentList" class="incident-list">
+            <!-- Incidents will appear here -->
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api/incidents';
+
+        // Handle Form Submission
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    e.target.reset();
+                    fetchIncidents(); // Refresh immediately
+                }
+            } catch (err) {
+                console.error('Error submitting report:', err);
+            }
+        });
+
+        // Fetch and Display Incidents
+        async function fetchIncidents() {
+            try {
+                const res = await fetch(API_URL);
+                const incidents = await res.json();
+                renderIncidents(incidents);
+            } catch (err) {
+                console.error('Error fetching incidents:', err);
+            }
+        }
+
+        function renderIncidents(incidents) {
+            const container = document.getElementById('incidentList');
+            container.innerHTML = incidents.map(incident => `
+                <div class="incident-card">
+                    <div>
+                        <div style="font-weight: 500; margin-bottom: 0.25rem;">${incident.description}</div>
+                        <div class="incident-meta">
+                            <span class="badge badge-${incident.status}">${incident.status}</span>
+                            ${incident.category ? `<span class="badge" style="background:#f1f5f9">${incident.category}</span>` : ''}
+                            ${incident.priority ? `<span class="badge priority-${incident.priority}">${incident.priority} Priority</span>` : ''}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem;">
+                            ID: ${incident.id.substring(0, 8)}...
+                        </div>
+                    </div>
+                    ${incident.imageUrl ? `<div><span style="font-size:1.5rem">📷</span></div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Poll every 2 seconds
+        setInterval(fetchIncidents, 2000);
+        fetchIncidents(); // Initial load
+    </script>
+</body>
+
+</html>

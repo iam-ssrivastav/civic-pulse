@@ -1,0 +1,10 @@
+target/
+*.log
+.idea/
+*.iml
+.DS_Store
+uploads/
+.mvn/wrapper/maven-wrapper.jar
+**/.DS_Store
+**/target/
+**/*.log
