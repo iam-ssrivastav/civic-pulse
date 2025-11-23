@@ -116,7 +116,7 @@ Open `frontend/index.html` in your browser.
 ## 🎬 Demo
 
 ### Submit an Incident
-![Submit Report](https://via.placeholder.com/800x400/4CAF50/FFFFFF?text=Submit+Incident+Form)
+![Submit Report](screenshots/form.png)
 
 ### AI Processing in Action
 The system automatically:
@@ -125,7 +125,7 @@ The system automatically:
 - ✅ Updates status to `ANALYZED`
 
 ### Live Dashboard
-![Dashboard](https://via.placeholder.com/800x400/2196F3/FFFFFF?text=Real-time+Dashboard)
+![Dashboard](screenshots/dashboard.png)
 
 ---
 
