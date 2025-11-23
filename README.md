@@ -227,6 +227,48 @@ spring.ai.ollama.chat.model=llama3
 
 ---
 
+## 💾 Data Persistence Verification
+
+All incident data is **fully persisted** in PostgreSQL with transactional safety. Here's proof from the actual database:
+
+### Query the Database
+
+```bash
+docker exec civic-pulse-postgres-1 psql -U user -d civicpulse -c \
+  "SELECT id, description, status, category, priority, created_at FROM incidents ORDER BY created_at DESC LIMIT 5;"
+```
+
+### Sample Output
+
+```
+                  id                  |                       description                       |  status  |    category    | priority |         created_at         
+--------------------------------------+---------------------------------------------------------+----------+----------------+----------+----------------------------
+ 769e5143-461e-482a-ab1c-602c46dd99bb | Garbage is piling up on the sidewalk near the park.     | ANALYZED | SANITATION     | MEDIUM   | 2025-11-23 15:38:35
+ 16a1e954-b750-4716-9299-1413ca014395 | Broken streetlight                                      | ANALYZED | INFRASTRUCTURE | MEDIUM   | 2025-11-23 15:37:14
+ e6041282-63ab-4e02-9a21-dcb65e5aaead | Traffic lights are broken at the downtown intersection. | PENDING  |                |          | 2025-11-23 15:33:40
+```
+
+### What This Shows
+
+- ✅ **UUID Primary Keys** - Globally unique identifiers for each incident
+- ✅ **Full Text Storage** - Complete incident descriptions preserved
+- ✅ **Status Tracking** - `PENDING` → `ANALYZED` state transitions saved
+- ✅ **AI Results Persisted** - Category and Priority stored after analysis
+- ✅ **Timestamps** - Automatic `created_at` tracking
+- ✅ **Data Survives Restarts** - PostgreSQL volume ensures persistence
+
+### Persistence Features
+
+| Feature | Implementation |
+|---------|---------------|
+| **Database** | PostgreSQL 15 with Docker volume |
+| **ORM** | Spring Data JPA with Hibernate |
+| **Schema Management** | Auto-update (`spring.jpa.hibernate.ddl-auto=update`) |
+| **Transactions** | ACID-compliant with automatic rollback |
+| **Volume** | `postgres_data` persists across container restarts |
+
+---
+
 ## 🎯 Use Cases
 
 - 🏗️ **Smart Cities** - Citizen-driven infrastructure monitoring
